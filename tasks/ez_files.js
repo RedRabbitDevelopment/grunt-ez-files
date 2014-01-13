@@ -14,36 +14,22 @@ module.exports = function(grunt) {
   // creation: http://gruntjs.com/creating-tasks
 
   grunt.registerMultiTask('ez_files', 'The best Grunt plugin ever.', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
-    });
-
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
-
-      // Handle options.
-      src += options.punctuation;
-
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
-
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
+    var FrontEnd, done, frontend, path,
+      _this = this;
+    done = this.async();
+    grunt.task.run('copy:ez_ctrl');
+    FrontEnd = require(this.data.frontend);
+    frontend = new FrontEnd;
+    path = require('path');
+    return frontend.controllerManager.readdir(path.resolve(this.data.routes)).then(function() {
+      var fs;
+      fs = require('fs');
+      return fs.writeFile(_this.data.output, frontend.getFrontEndMethods(), function(err) {
+        return done();
+      });
+    }).fail(function(error) {
+      console.log(error);
+      return done(false);
     });
   });
 
